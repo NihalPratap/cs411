@@ -60,8 +60,38 @@ class MiraClassifier:
         datum is a counter from features to values for those features
         representing a vector of values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        weights = {}
+        score = util.Counter()
+        for c in Cgrid:
+        	self.weights = dict((label, util.Counter()) for label in self.legalLabels)
+        	for j in range(self.max_iterations):
+        		for i,l in zip(trainingData, trainingLabels):
+        			y1 = self.classify([i])[0]
+        			y = l #trainingLabels[i]
+        			#print "training here----------------------"
+        			#print i
+        			if y != y1:
+        				t = min([c, (((self.weights[y1] - self.weights[y]) * i + 1.0) / (2 * (i * i)))])
+        				update = util.Counter()
+        				for key, val in i.iteritems():
+        					update[key] = t * val
+        				self.weights[l] += update
+        				self.weights[y1] -= update
+        	weights[c] = self.weights
+        	score[c] = set(list(self.classify(validationData))) & set(list(validationLabels))
+        maxc = Cgrid[0]
+        maxscore = score[0]
+        for c, cscore in zip(Cgrid, score):
+        	if cscore > maxscore:
+        		maxscore = cscore
+        		maxc = c
+        	elif cscore == maxscore and c < maxc:
+        		maxscore = cscore
+        		maxc = c
+        self.weights = weights[maxc]
+        #self.C = maxc
+
+        #util.raiseNotDefined()
 
     def classify(self, data ):
         """
@@ -77,5 +107,6 @@ class MiraClassifier:
                 vectors[l] = self.weights[l] * datum
             guesses.append(vectors.argMax())
         return guesses
+
 
 

@@ -77,8 +77,54 @@ def enhancedFeatureExtractorDigit(datum):
     """
     features =  basicFeatureExtractorDigit(datum)
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # Compute gradients
+    for x in range(1, DIGIT_DATUM_WIDTH):
+        for y in range(1, DIGIT_DATUM_HEIGHT):
+            features[("horiz", x, y)] = int(datum.getPixel(x, y) >
+                                            datum.getPixel(x - 1, y))
+
+            features[("verti", x, y)] = int(datum.getPixel(x, y) >
+                                            datum.getPixel(x, y - 1))
+
+    # Check for continuous regions
+    def getNeighbors(x, y):
+        neighbors = []
+        if x > 0:
+            neighbors.append((x - 1, y))
+        if x < DIGIT_DATUM_WIDTH - 1:
+            neighbors.append((x + 1, y))
+        if y > 0:
+            neighbors.append((x, y - 1))
+        if y < DIGIT_DATUM_HEIGHT - 1:
+            neighbors.append((x, y + 1))
+        return neighbors
+
+    region = set()
+    contiguous = 0
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if (x, y) not in region and datum.getPixel(x, y) < 2:
+                contiguous += 1
+                stack = [(x, y)]
+                while stack:
+                    point = stack.pop()
+                    region.add(point)
+                    for neighbor in getNeighbors(*point):
+                        if datum.getPixel(*neighbor) < 2 and neighbor not in region:
+                            stack.append(neighbor)
+
+    features["contiguous0"] = contiguous % 2
+    features["contiguous1"] = (contiguous >> 1) % 2
+    features["contiguous2"] = (contiguous >> 2) % 2
+
+    #return features
+    #util.raiseNotDefined()
+    # print "----------------------------"
+    # print features["contiguous0"]
+    # print features["contiguous1"]
+    # print features["contiguous2"]
+    # print "----------------------------"
 
     return features
 
@@ -166,16 +212,16 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
 
     # Put any code here...
     # Example of use:
-    # for i in range(len(guesses)):
-    #     prediction = guesses[i]
-    #     truth = testLabels[i]
-    #     if (prediction != truth):
-    #         print "==================================="
-    #         print "Mistake on example %d" % i
-    #         print "Predicted %d; truth is %d" % (prediction, truth)
-    #         print "Image: "
-    #         print rawTestData[i]
-    #         break
+    for i in range(len(guesses)):
+        prediction = guesses[i]
+        truth = testLabels[i]
+        if (prediction != truth):
+            print "==================================="
+            print "Mistake on example %d" % i
+            print "Predicted %d; truth is %d" % (prediction, truth)
+            print "Image: "
+            print rawTestData[i]
+            break
 
 
 ## =====================
