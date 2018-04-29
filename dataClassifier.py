@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -24,6 +24,7 @@ import samples
 import sys
 import util
 from pacman import GameState
+import pdb
 
 TEST_SET_SIZE = 100
 DIGIT_DATUM_WIDTH=28
@@ -76,16 +77,16 @@ def enhancedFeatureExtractorDigit(datum):
     ##
     """
     features =  basicFeatureExtractorDigit(datum)
-
+    # pdb.set_trace()
+    #
 
     # Compute gradients
     for x in range(1, DIGIT_DATUM_WIDTH):
         for y in range(1, DIGIT_DATUM_HEIGHT):
-            features[("horiz", x, y)] = int(datum.getPixel(x, y) >
-                                            datum.getPixel(x - 1, y))
-
-            features[("verti", x, y)] = int(datum.getPixel(x, y) >
-                                            datum.getPixel(x, y - 1))
+            if datum.getPixel(x,y) == 1:
+                features[("edge", x, y)] = 1
+            else:
+                features[("edge", x, y)] = 0
 
     # Check for continuous regions
     def getNeighbors(x, y):
@@ -109,6 +110,7 @@ def enhancedFeatureExtractorDigit(datum):
                 stack = [(x, y)]
                 while stack:
                     point = stack.pop()
+                    # pdb.set_trace()
                     region.add(point)
                     for neighbor in getNeighbors(*point):
                         if datum.getPixel(*neighbor) < 2 and neighbor not in region:
@@ -125,6 +127,8 @@ def enhancedFeatureExtractorDigit(datum):
     # print features["contiguous1"]
     # print features["contiguous2"]
     # print "----------------------------"
+    # pdb.set_trace()
+
 
     return features
 
@@ -410,7 +414,7 @@ def runClassifier(args, options):
     featureFunction = args['featureFunction']
     classifier = args['classifier']
     printImage = args['printImage']
-    
+
     # Load data
     numTraining = options.training
     numTest = options.test
