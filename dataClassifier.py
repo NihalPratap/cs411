@@ -77,62 +77,53 @@ def enhancedFeatureExtractorDigit(datum):
     ##
     """
     features =  basicFeatureExtractorDigit(datum)
-    # pdb.set_trace()
-    #
-
-    # Compute gradients
-    for x in range(1, DIGIT_DATUM_WIDTH):
-        for y in range(1, DIGIT_DATUM_HEIGHT):
-            if datum.getPixel(x,y) == 1:
-                features[("edge", x, y)] = 1
-            else:
-                features[("edge", x, y)] = 0
-
-    # Check for continuous regions
-    def getNeighbors(x, y):
-        neighbors = []
-        if x > 0:
-            neighbors.append((x - 1, y))
-        if x < DIGIT_DATUM_WIDTH - 1:
-            neighbors.append((x + 1, y))
-        if y > 0:
-            neighbors.append((x, y - 1))
-        if y < DIGIT_DATUM_HEIGHT - 1:
-            neighbors.append((x, y + 1))
-        return neighbors
-
-    region = set()
+    contiguous_region = set()
     contiguous = 0
-    for x in xrange(DIGIT_DATUM_WIDTH):
-        for y in xrange(DIGIT_DATUM_HEIGHT):
-            if (x, y) not in region and datum.getPixel(x, y) < 2:
-                contiguous += 1
-                stack = [(x, y)]
-                while stack:
-                    point = stack.pop()
-                    # pdb.set_trace()
-                    region.add(point)
-                    for neighbor in getNeighbors(*point):
-                        if datum.getPixel(*neighbor) < 2 and neighbor not in region:
-                            stack.append(neighbor)
+    features["contiguous0"] = 0
+    features["contiguous1"] = 0
+    features["contiguous2"] = 0
+    features["contiguous3"] = 0
 
-    features["contiguous0"] = contiguous % 2
-    features["contiguous1"] = (contiguous >> 1) % 2
-    features["contiguous2"] = (contiguous >> 2) % 2
+    data_dict = basicFeatureExtractorDigit(datum)
+    for xy,val in data_dict.items():
+        if xy not in contiguous_region and val < 1:
+            contiguous += 1
+            point_in_contiguous_region = [xy]
+            while point_in_contiguous_region:
+                point = point_in_contiguous_region.pop()
+                contiguous_region.add(point)
+                for neighbor in getNeighbors(point):
+                    if data_dict[neighbor] < 1 and neighbor not in contiguous_region:
+                        point_in_contiguous_region.append(neighbor)
 
-    #return features
-    #util.raiseNotDefined()
-    # print "----------------------------"
-    # print features["contiguous0"]
-    # print features["contiguous1"]
-    # print features["contiguous2"]
-    # print "----------------------------"
-    # pdb.set_trace()
+    if contiguous == 0:
+        features["contiguous0"] = 0
+
+    if contiguous == 1:
+        features["contiguous1"] = 2
+
+    if contiguous == 2:
+        features["contiguous2"] = 10
+
+    if contiguous == 3:
+        features["contiguous3"] = 40
 
 
     return features
 
-
+def getNeighbors(xy):
+    x = xy[0]
+    y = xy[1]
+    neighbors = []
+    if x > 0:
+        neighbors.append((x - 1, y))
+    if x < DIGIT_DATUM_WIDTH - 1:
+        neighbors.append((x + 1, y))
+    if y > 0:
+        neighbors.append((x, y - 1))
+    if y < DIGIT_DATUM_HEIGHT - 1:
+        neighbors.append((x, y + 1))
+    return neighbors
 
 def basicFeatureExtractorPacman(state):
     """

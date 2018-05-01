@@ -78,7 +78,6 @@ class MiraClassifier:
 							update[key] = t * val
 						self.weights[trainLabel] += update
 						self.weights[outputLabel] -= update
-						pdb.set_trace()
 			weights[c] = self.weights
 			score[c] = set(list(self.classify(validationData))) & set(list(validationLabels))
 
